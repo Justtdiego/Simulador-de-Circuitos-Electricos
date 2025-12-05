@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Simulador de Divisor de Voltaje</title>
+
+<!-- IMPORTAR CHART.JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- IMPORTAR MATH.JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #004e92, #000428);
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    }
+
+    .container {
+        width: 450px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 25px;
+        border-radius: 15px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        animation: fadeIn 1s ease-in-out;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    label {
+        font-size: 14px;
+        margin-top: 15px;
+        display: block;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        margin-top: 5px;
+        outline: none;
+    }
+
+    button {
+        width: 100%;
+        margin-top: 20px;
+        padding: 12px;
+        background: #00c6ff;
+        background: linear-gradient(45deg, #00c6ff, #0072ff);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        transform: scale(1.05);
+        background: linear-gradient(45deg, #0072ff, #00c6ff);
+    }
+
+    .resultado {
+        background: rgba(255,255,255,0.15);
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 10px;
+        animation: slideUp 0.7s ease;
+    }
+
+    canvas {
+        margin-top: 25px;
+        background: rgba(255,255,255,0.2);
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    @keyframes fadeIn {
+        from {opacity: 0;}
+        to {opacity: 1;}
+    }
+
+    @keyframes slideUp {
+        from {transform: translateY(20px); opacity: 0;}
+        to {transform: translateY(0); opacity: 1;}
+    }
+</style>
+
+</head>
+<body>
+
+<div class="container">
+    <h2>Simulador de Divisor de Voltaje</h2>
+
+    <label>Voltaje de la fuente (V):</label>
+    <input id="voltaje" type="number" value="12">
+
+    <label>Resistencia R1 (Ω):</label>
+    <input id="r1" type="number" value="7000">
+
+    <label>Resistencia R2 (Ω):</label>
+    <input id="r2" type="number" value="5000">
+
+    <button onclick="calcular()">Calcular</button>
+
+    <div id="salida"></div>
+
+    <!-- GRÁFICA DE VOLTAJE -->
+    <canvas id="graficoVoltaje"></canvas>
+</div>
+
+<script>
+let grafico;
+
+// FUNCIÓN PRINCIPAL DEL SIMULADOR
+function calcular() {
+    let V = parseFloat(document.getElementById('voltaje').value);
+    let R1 = parseFloat(document.getElementById('r1').value);
+    let R2 = parseFloat(document.getElementById('r2').value);
+
+    // USANDO MATH.JS PARA LOS CÁLCULOS
+    let RT = math.add(R1, R2);
+    let I = math.divide(V, RT);      
+    let V1 = math.multiply(I, R1);     
+    let V2 = math.multiply(I, R2);
+
+    let estado = (V2 > V/2) ? "Voltaje de salida ALTO" : "Voltaje de salida BAJO";
+
+    document.getElementById('salida').innerHTML = `
+        <div class='resultado'>
+            <b>Resultados:</b><br><br>
+            Corriente total: <b>${I.toFixed(6)} A</b><br>
+            Voltaje en R1: <b>${V1.toFixed(2)} V</b><br>
+            Voltaje en R2: <b>${V2.toFixed(2)} V</b><br><br>
+            <b>${estado}</b>
+        </div>
+    `;
+
+    actualizarGrafico(V, V1, V2);
+}
+
+// FUNCIÓN QUE GENERA LA GRÁFICA DINÁMICA
+function actualizarGrafico(V_total, V1, V2) {
+    const ctx = document.getElementById("graficoVoltaje").getContext("2d");
+
+    if (grafico) grafico.destroy();
+
+    grafico = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: ["Voltaje Total", "Voltaje en R1", "Voltaje en R2"],
+            datasets: [{
+                label: "Voltaje (V)",
+                data: [V_total, V1, V2],
+                backgroundColor: ["#00c6ff", "#ffca28", "#66ff99"],
+                borderColor: "#ffffff",
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: "white" }
+                },
+                x: {
+                    ticks: { color: "white" }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: "white" } }
+            }
+        }
+    });
+}
+</script>
+
+</body>
+</html>
