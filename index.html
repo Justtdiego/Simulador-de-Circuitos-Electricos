@@ -14,12 +14,10 @@
     body {
         font-family: 'Segoe UI', sans-serif;
         background: linear-gradient(135deg, #004e92, #000428);
-        height: 100vh;
         margin: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        padding: 40px 0;       /* ESPACIO ARRIBA Y ABAJO PARA SCROLL */
         color: white;
+        overflow-y: auto;       /* PERMITIR SCROLL */
     }
 
     .container {
@@ -27,6 +25,7 @@
         background: rgba(255, 255, 255, 0.1);
         padding: 25px;
         border-radius: 15px;
+        margin: auto;           /* Centrado con scroll */
         backdrop-filter: blur(12px);
         box-shadow: 0 0 20px rgba(255,255,255,0.1);
         animation: fadeIn 1s ease-in-out;
@@ -57,7 +56,6 @@
         width: 100%;
         margin-top: 20px;
         padding: 12px;
-        background: #00c6ff;
         background: linear-gradient(45deg, #00c6ff, #0072ff);
         border: none;
         border-radius: 8px;
@@ -117,7 +115,6 @@
 
     <div id="salida"></div>
 
-    <!-- GRÁFICA DE VOLTAJE -->
     <canvas id="graficoVoltaje"></canvas>
 </div>
 
@@ -130,28 +127,39 @@ function calcular() {
     let R1 = parseFloat(document.getElementById('r1').value);
     let R2 = parseFloat(document.getElementById('r2').value);
 
-    // USANDO MATH.JS PARA LOS CÁLCULOS
     let RT = math.add(R1, R2);
-    let I = math.divide(V, RT);      
-    let V1 = math.multiply(I, R1);     
+    let I = math.divide(V, RT);
+    let V1 = math.multiply(I, R1);
     let V2 = math.multiply(I, R2);
 
     let estado = (V2 > V/2) ? "Voltaje de salida ALTO" : "Voltaje de salida BAJO";
 
+    // MOSTRAR TODOS LOS CÁLCULOS PASO POR PASO
     document.getElementById('salida').innerHTML = `
         <div class='resultado'>
-            <b>Resultados:</b><br><br>
-            Corriente total: <b>${I.toFixed(6)} A</b><br>
-            Voltaje en R1: <b>${V1.toFixed(2)} V</b><br>
-            Voltaje en R2: <b>${V2.toFixed(2)} V</b><br><br>
-            <b>${estado}</b>
+            <b>Resultados y cálculos:</b><br><br>
+
+            <b>1. Suma de resistencias:</b><br>
+            RT = R1 + R2 = ${R1} Ω + ${R2} Ω = <b>${RT} Ω</b><br><br>
+
+            <b>2. Cálculo de la corriente:</b><br>
+            I = V / RT = ${V} V / ${RT} Ω = <b>${I.toFixed(6)} A</b><br><br>
+
+            <b>3. Voltaje en R1:</b><br>
+            V1 = I × R1 = ${I.toFixed(6)} A × ${R1} Ω = <b>${V1.toFixed(2)} V</b><br><br>
+
+            <b>4. Voltaje en R2:</b><br>
+            V2 = I × R2 = ${I.toFixed(6)} A × ${R2} Ω = <b>${V2.toFixed(2)} V</b><br><br>
+
+            <b>Estado del divisor de voltaje:</b> ${estado}
         </div>
     `;
 
     actualizarGrafico(V, V1, V2);
 }
 
-// FUNCIÓN QUE GENERA LA GRÁFICA DINÁMICA
+
+// FUNCIÓN QUE GENERA LA GRÁFICA
 function actualizarGrafico(V_total, V1, V2) {
     const ctx = document.getElementById("graficoVoltaje").getContext("2d");
 
@@ -172,13 +180,8 @@ function actualizarGrafico(V_total, V1, V2) {
         options: {
             responsive: true,
             scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { color: "white" }
-                },
-                x: {
-                    ticks: { color: "white" }
-                }
+                y: { beginAtZero: true, ticks: { color: "white" }},
+                x: { ticks: { color: "white" }}
             },
             plugins: {
                 legend: { labels: { color: "white" } }
